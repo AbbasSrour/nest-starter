@@ -6,7 +6,7 @@ import type {
 import { EventSubscriber } from 'typeorm';
 
 import { generateHash } from '@modules/../common/abstract/utils';
-import { UserEntity } from '@modules/user/user.entity';
+import { UserEntity } from '@modules/user/entities/user.entity';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
@@ -21,7 +21,6 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
   }
 
   beforeUpdate(event: UpdateEvent<UserEntity>): void {
-    // FIXME check event.databaseEntity.password
     const entity = event.entity as UserEntity;
 
     if (entity.password !== event.databaseEntity.password) {

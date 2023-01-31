@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { isNil } from 'lodash';
-
 
 import { UserSubscriber } from '@database/subscribers/user.subscriber';
 import { SnakeNamingStrategy } from '@strategies/snake-naming.strategy';
 
 @Injectable()
-export class ApiConfigService {
-  constructor(private configService: ConfigService) {}
+export class ApiConfigService extends ConfigService {
+  constructor() {
+    super();
+  }
 
   get isDevelopment(): boolean {
     return this.nodeEnv === 'development';
@@ -42,7 +42,7 @@ export class ApiConfigService {
       const entityContext = require.context(
         './../../modules',
         true,
-        /\.entity\.ts$/,
+        /\.entity\.ts$/
       );
       entities = entityContext.keys().map((id) => {
         const entityModule = entityContext<Record<string, unknown>>(id);
@@ -53,7 +53,7 @@ export class ApiConfigService {
       const migrationContext = require.context(
         './../../database/migrations',
         false,
-        /\.ts$/,
+        /\.ts$/
       );
 
       migrations = migrationContext.keys().map((id) => {
@@ -70,12 +70,11 @@ export class ApiConfigService {
       keepConnectionAlive: !this.isTest,
       dropSchema: this.isTest,
       type: 'postgres',
-      name: 'default',
       host: this.getString('DB_HOST'),
       port: this.getNumber('DB_PORT'),
       username: this.getString('DB_USERNAME'),
       password: this.getString('DB_PASSWORD'),
-      database: this.getString('DB_DATABASE'),
+      database: this.getString('DB_NAME'),
       subscribers: [UserSubscriber],
       migrationsRun: true,
       logging: this.getBoolean('ENABLE_ORM_LOGS'),
@@ -109,16 +108,6 @@ export class ApiConfigService {
     };
   }
 
-  private get(key: string): string {
-    const value = this.configService.get<string>(key);
-
-    if (isNil(value)) {
-      throw new Error(key + ' environment variable does not set'); // probably we should call process.exit() too to avoid locking the service
-    }
-
-    return value;
-  }
-
   private getNumber(key: string): number {
     const value = this.get(key);
 
@@ -130,7 +119,7 @@ export class ApiConfigService {
   }
 
   private getBoolean(key: string): boolean {
-    const value = this.get(key);
+    const value = this.getOrThrow<string>(key);
 
     try {
       return Boolean(JSON.parse(value));
@@ -140,7 +129,7 @@ export class ApiConfigService {
   }
 
   private getString(key: string): string {
-    const value = this.get(key);
+    const value = this.getOrThrow<string>(key);
 
     return value.replace(/\\n/g, '\n');
   }

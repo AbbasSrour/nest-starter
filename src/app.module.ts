@@ -1,16 +1,20 @@
+import './boilerplate.polyfill';
+
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { ApiConfigModule } from '@common/config/api-config.module';
+import { ApiConfigService } from '@common/config/api-config.service';
+import { TranslationModule } from '@common/translation/translation.module';
+import { HealthCheckerModule } from '@modules/health-checker/health-checker.module';
+import { UserModule } from '@modules/user/user.module';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import "./boilerplate.polyfill"
-import { ApiConfigModule } from "@common/config/api-config.module";
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ApiConfigService } from "@common/config/api-config.service";
-import { I18nModule } from "nestjs-i18n";
-import * as path from "path";
-import { HealthCheckerModule } from "@modules/health-checker/health-checker.module";
 
 @Module({
   imports: [
+    TranslationModule,
     ApiConfigModule,
     TypeOrmModule.forRootAsync({
       imports: [ApiConfigModule],
@@ -18,17 +22,7 @@ import { HealthCheckerModule } from "@modules/health-checker/health-checker.modu
         configService.postgresConfig,
       inject: [ApiConfigService],
     }),
-    I18nModule.forRootAsync({
-      useFactory: (configService: ApiConfigService) => ({
-        fallbackLanguage: configService.fallbackLanguage,
-        loaderOptions: {
-          path: path.join(__dirname, '/common/i18n/'),
-          watch: configService.isDevelopment,
-        },
-      }),
-      imports: [ApiConfigModule],
-      inject: [ApiConfigService],
-    }),
+    UserModule,
     HealthCheckerModule,
   ],
   controllers: [AppController],

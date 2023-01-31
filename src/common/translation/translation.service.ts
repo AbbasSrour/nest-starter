@@ -28,7 +28,7 @@ export class TranslationService {
 
           if (translateDec) {
             return this.translate(
-              `${translateDec.translationKey ?? key}.${value}`,
+              `${translateDec.translationKey ?? key}.${value}`
             );
           }
 
@@ -45,10 +45,10 @@ export class TranslationService {
               if (v instanceof AbstractDto) {
                 return this.translateNecessaryKeys(v);
               }
-            }),
+            })
           );
         }
-      }),
+      })
     );
 
     return dto;

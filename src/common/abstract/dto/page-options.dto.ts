@@ -9,27 +9,27 @@ export class PageOptionsDto {
   @EnumFieldOptional(() => Order, {
     default: Order.ASC,
   })
-  readonly order: Order = Order.ASC;
+  public readonly order: Order = Order.ASC;
 
   @NumberFieldOptional({
     minimum: 1,
     default: 1,
     int: true,
   })
-  readonly page: number = 1;
+  public readonly page: number = 1;
 
   @NumberFieldOptional({
     minimum: 1,
-    maximum: 50,
+    maximum: 100,
     default: 10,
     int: true,
   })
-  readonly take: number = 10;
+  public readonly take: number = 10;
 
   get skip(): number {
     return (this.page - 1) * this.take;
   }
 
   @StringFieldOptional()
-  readonly q?: string;
+  public readonly q?: string;
 }

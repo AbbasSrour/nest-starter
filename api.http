@@ -1,0 +1,4 @@
+### Admin
+GET http://localhost:3000/posts/
+Content-Type: application/json
+x-language-code:

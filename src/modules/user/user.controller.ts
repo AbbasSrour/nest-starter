@@ -1,21 +1,25 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Post,
   Query,
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { PageDto } from '@common/abstract/dto/page.dto';
-import { RoleType } from "@constants";
-import { ApiPageOkResponse, Auth, AuthUser, UUIDParam } from "@decorators";
-import { UseLanguageInterceptor } from "@interceptors/language-interceptor.service";
-import { TranslationService } from '@common/shared/services/translation.service';
-import { UserDto } from './dtos/user.dto';
-import { UsersPageOptionsDto } from './dtos/users-page-options.dto';
-import { UserEntity } from './user.entity';
+import { TranslationService } from '@common/translation/translation.service';
+import { RoleType } from '@constants';
+import { ApiPageOkResponse, Auth, AuthUser, UUIDParam } from '@decorators';
+import { UseLanguageInterceptor } from '@interceptors/language-interceptor.service';
+import { CreateUserNotificationTokenDto } from '@modules/user/dto/create-user-notification-token.dto';
+
+import { UserDto } from './dto/user.dto';
+import { UsersPageOptionsDto } from './dto/users-page-options.dto';
+import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @Controller('users')
@@ -23,16 +27,16 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(
     private userService: UserService,
-    private readonly translationService: TranslationService,
+    private readonly translationService: TranslationService
   ) {}
 
   @Get('admin')
-  @Auth([RoleType.USER])
+  @Auth([RoleType.ADMIN])
   @HttpCode(HttpStatus.OK)
   @UseLanguageInterceptor()
   async admin(@AuthUser() user: UserEntity) {
     const translation = await this.translationService.translate(
-      'admin.keywords.admin',
+      'admin.keywords.admin'
     );
 
     return {
@@ -49,7 +53,7 @@ export class UserController {
   })
   getUsers(
     @Query(new ValidationPipe({ transform: true }))
-    pageOptionsDto: UsersPageOptionsDto,
+    pageOptionsDto: UsersPageOptionsDto
   ): Promise<PageDto<UserDto>> {
     return this.userService.getUsers(pageOptionsDto);
   }
@@ -59,10 +63,24 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Get users list',
+    description: 'Get user',
     type: UserDto,
   })
-  getUser(@UUIDParam('id') userId: Uuid): Promise<UserDto> {
-    return this.userService.getUser(userId);
+  async getUser(@UUIDParam('id') userId: Uuid): Promise<UserDto> {
+    const userEntity = await this.userService.getUser(userId);
+
+    return userEntity.toDto();
   }
+
+  @Post('/tokens')
+  @Auth([])
+  @HttpCode(HttpStatus.CREATED)
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Create Token',
+  })
+  async createUserNotificationToken(
+    @AuthUser() user: UserEntity,
+    @Body() dto: CreateUserNotificationTokenDto
+  ) {}
 }

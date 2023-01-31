@@ -4,8 +4,9 @@ import { firstValueFrom } from 'rxjs';
 
 import { PageTypeException } from '@exceptions/page-type.exception';
 import type { Constructor } from '@src/types';
-import type { PageDto } from './dto/page.dto';
+
 import type { PageMetaDto } from './dto/page-meta.dto';
+import type { PageDto } from './dto/page.dto';
 
 export class AbstractClientService<ActionType> {
   constructor(private client: ClientProxy) {}

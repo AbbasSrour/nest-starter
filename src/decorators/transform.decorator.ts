@@ -2,7 +2,7 @@ import { Transform, TransformationType } from 'class-transformer';
 import { parsePhoneNumber } from 'libphonenumber-js';
 import { castArray, isArray, isNil, map, trim } from 'lodash';
 
-import { GeneratorProvider } from '@providers';
+import { GeneratorProvider } from '@modules/../providers';
 
 /**
  * @description trim spaces from start and end, replace multiple spaces with one.
@@ -38,7 +38,7 @@ export function ToBoolean(): PropertyDecorator {
           return params.value;
       }
     },
-    { toClassOnly: true },
+    { toClassOnly: true }
   );
 }
 
@@ -58,7 +58,7 @@ export function ToInt(): PropertyDecorator {
 
       return Number.parseInt(value, 10);
     },
-    { toClassOnly: true },
+    { toClassOnly: true }
   );
 }
 
@@ -81,7 +81,7 @@ export function ToArray(): PropertyDecorator {
 
       return castArray(value);
     },
-    { toClassOnly: true },
+    { toClassOnly: true }
   );
 }
 
@@ -102,7 +102,7 @@ export function ToLowerCase(): PropertyDecorator {
     },
     {
       toClassOnly: true,
-    },
+    }
   );
 }
 
@@ -123,7 +123,7 @@ export function ToUpperCase(): PropertyDecorator {
     },
     {
       toClassOnly: true,
-    },
+    }
   );
 }
 

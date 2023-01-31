@@ -1,7 +1,7 @@
 export * from './api-page-ok-response.decorator';
 export * from './auth-user.decorator';
 export * from './field.decorator';
-export * from './http.decorator';
+export * from './auth.decorator';
 export * from './property.decorator';
 export * from './public-route.decorator';
 export * from './swagger.decorator';
@@ -10,3 +10,4 @@ export * from './translate.decorator';
 export * from './use-dto.decorator';
 export * from './validator.decorator';
 export * from './virtual-column.decorator';
+export * from './uuid-param.decorator';

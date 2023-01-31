@@ -1,8 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
-import { DYNAMIC_TRANSLATION_DECORATOR_KEY } from "@decorators/translate.decorator";
-import { ContextProvider } from "@providers/context.provider";
-import type { AbstractEntity } from "../abstract.entity";
+import { DYNAMIC_TRANSLATION_DECORATOR_KEY } from '@decorators/translate.decorator';
+import { ContextProvider } from '@providers/context.provider';
+
+import type { AbstractEntity } from '../abstract.entity';
 
 export class AbstractDto {
   @ApiProperty()
