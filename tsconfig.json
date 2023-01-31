@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "rootDir": ".",
+    "composite": false,
+    "inlineSources": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "preserveWatchOutput": false,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
+    "isolatedModules": true,
+    "declaration": false,
+    "declarationMap": false,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+    "noLib": false,
+    "resolveJsonModule": true,
+    "module": "commonjs",
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@src/*": [
+        "src/*"
+      ],
+      "@common": [
+        "src/common"
+      ],
+      "@common/*": [
+        "src/common/*"
+      ],
+      "@constants": [
+        "src/constants"
+      ],
+      "@constants/*": [
+        "src/constants/*"
+      ],
+      "@decorators": [
+        "src/decorators"
+      ],
+      "@decorators/*": [
+        "src/decorators/*"
+      ],
+      "@database": [
+        "src/database"
+      ],
+      "@database/*": [
+        "src/database/*"
+      ],
+      "@exceptions": [
+        "src/exceptions"
+      ],
+      "@exceptions/*": [
+        "src/exceptions/*"
+      ],
+      "@filters": [
+        "src/filters"
+      ],
+      "@filters/*": [
+        "src/filters/*"
+      ],
+      "@guards": [
+        "src/guards"
+      ],
+      "@guards/*": [
+        "src/guards/*"
+      ],
+      "@interceptors": [
+        "src/interceptors"
+      ],
+      "@interceptors/*": [
+        "src/interceptors/*"
+      ],
+      "@interfaces": [
+        "src/interfaces"
+      ],
+      "@interfaces/*": [
+        "src/interfaces/*"
+      ],
+      "@modules": [
+        "src/modules"
+      ],
+      "@modules/*": [
+        "src/modules/*"
+      ],
+      "@providers": [
+        "src/providers"
+      ],
+      "@providers/*": [
+        "src/providers/*"
+      ],
+      "@strategies": [
+        "src/strategies"
+      ],
+      "@strategies/*": [
+        "src/strategies/*"
+      ],
+      "@validators": [
+        "src/validators"
+      ],
+      "@validators/*": [
+        "src/validators/*"
+      ]
+    }
+  },
+}

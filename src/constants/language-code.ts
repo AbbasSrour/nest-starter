@@ -1,0 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+export enum LanguageCode {
+  en_US = "en_US",
+  ru_RU = "ar_LB",
+}
+
+export const supportedLanguageCount = Object.values(LanguageCode).length;
