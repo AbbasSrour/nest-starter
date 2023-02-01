@@ -32,14 +32,14 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   @Column({ nullable: true })
   avatar?: string;
 
-  @VirtualColumn()
-  fullName?: string;
-
   @Column({ default: false })
   isEmailVerified: boolean;
 
   @Column({ default: false })
   isPhoneVerified: boolean;
+
+  @VirtualColumn()
+  fullName?: string;
 
   @OneToMany(() => UserNotificationTokenEntity, (userTokens) => userTokens.user)
   notificationTokens: UserNotificationTokenEntity[];

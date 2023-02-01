@@ -1,33 +1,39 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { validateHash } from '@common/abstract/utils';
-import { ApiConfigService } from '@common/shared/services/api-config.service';
+import { ApiConfigService } from '@common/config/api-config.service';
 import type { RoleType } from '@constants';
 import { TokenType } from '@constants';
 import { UserNotFoundException } from '@exceptions';
+import { AlreadyVerifiedError } from '@exceptions/verification.exception';
 import type { ITokenPayload } from '@interfaces/token-payload.interface';
 import { EncryptedTokenPayloadBo } from '@modules/auth/bo/encrypted-token.payload.bo';
 import { PasswordResetTokenPayloadBo } from '@modules/auth/bo/password-reset-token.payload.bo';
 import { RefreshTokenPayloadBo } from '@modules/auth/bo/refresh-token.payload.bo';
 import type { ResetPasswordBo } from '@modules/auth/bo/reset-password.bo';
 import type { SocialProfileDto } from '@modules/auth/dto/social-profile.dto';
-import { AlreadyVerifiedError } from '@exceptions/verification.exception';
+import { GeneratorProvider } from '@providers';
 
-import type { UserEntity } from '../user/entities/user.entity';
-import { UserService } from '../user/user.service';
 import { AccessTokenPayloadBo } from './bo/access-token.payload.bo';
 import type { LoginDto } from './dto/login.dto';
+import type { UserEntity } from '../user/entities/user.entity';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger('Auth Service');
 
   constructor(
-    private jwtService: JwtService,
-    private apiConfigService: ApiConfigService,
-    private userService: UserService,
+    private readonly jwtService: JwtService,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly userService: UserService,
     private readonly configService: ConfigService
   ) {}
 
@@ -40,10 +46,8 @@ export class AuthService {
     role: RoleType;
     userId: Uuid;
   }): Promise<AccessTokenPayloadBo> {
-    this.logger.log('hello world');
-
     return new AccessTokenPayloadBo({
-      expiresIn: this.configService.getOrThrow<number>(
+      expiresIn: this.apiConfigService.getOrThrow<number>(
         'jwt.accessToken.expiration'
       ),
       accessToken: await this.jwtService.signAsync(
@@ -53,11 +57,12 @@ export class AuthService {
           role: data.role,
         },
         {
-          privateKey: this.configService.getOrThrow<string>(
+          privateKey: this.apiConfigService.get<string>(
             'jwt.accessToken.privateKey'
           ),
           expiresIn: Number.parseInt(
-            this.configService.getOrThrow<string>('jwt.accessToken.expiration'),
+            this.apiConfigService.get<string>('jwt.accessToken.expiration') ||
+              '',
             10
           ),
           algorithm: 'RS256',
@@ -76,7 +81,7 @@ export class AuthService {
     userId: Uuid;
   }): Promise<RefreshTokenPayloadBo> {
     return new RefreshTokenPayloadBo({
-      expiresIn: this.configService.getOrThrow<number>(
+      expiresIn: this.apiConfigService.getOrThrow<number>(
         'jwt.refreshToken.expiration'
       ),
       refreshToken: await this.jwtService.signAsync(
@@ -86,10 +91,10 @@ export class AuthService {
           role: data.role,
         },
         {
-          privateKey: this.configService.getOrThrow<string>(
+          privateKey: this.apiConfigService.getOrThrow<string>(
             'jwt.refreshToken.privateKey'
           ),
-          expiresIn: this.configService.getOrThrow<number>(
+          expiresIn: this.apiConfigService.getOrThrow<number>(
             'jwt.refreshToken.expiration'
           ),
           algorithm: 'RS256',
@@ -111,7 +116,9 @@ export class AuthService {
     tokenType: TokenType
   ): Promise<EncryptedTokenPayloadBo> {
     return new EncryptedTokenPayloadBo({
-      expiresIn: this.configService.getOrThrow('security.encToken.expiration'),
+      expiresIn: this.apiConfigService.getOrThrow(
+        'security.encToken.expiration'
+      ),
       token: await this.jwtService.signAsync(
         {
           userId,
@@ -119,10 +126,10 @@ export class AuthService {
           role,
         },
         {
-          privateKey: this.configService.getOrThrow<string>(
+          privateKey: this.apiConfigService.getOrThrow<string>(
             'security.encToken.privateKey'
           ),
-          expiresIn: this.configService.getOrThrow<number>(
+          expiresIn: this.apiConfigService.getOrThrow<number>(
             'security.encToken.expiration'
           ),
           algorithm: 'RS256',
@@ -142,13 +149,11 @@ export class AuthService {
   }: {
     email: string;
   }): Promise<PasswordResetTokenPayloadBo> {
-    const user = await this.userService
-      .findByUsernameOrEmail({ email })
-      .catch(() => {
-        throw new BadRequestException();
-      });
+    const user = await this.userService.findByEmail(email).catch(() => {
+      throw new UserNotFoundException();
+    });
 
-    const expiration = this.configService.getOrThrow<string>(
+    const expiration = this.apiConfigService.getOrThrow<string>(
       'security.encToken.expiration'
     );
 
@@ -175,16 +180,11 @@ export class AuthService {
    * @param data
    */
   async resetPassword(data: ResetPasswordBo): Promise<void> {
-    const {userId} = this.jwtService.decode(data.token) as ITokenPayload;
+    const { userId } = this.jwtService.decode(data.token) as ITokenPayload;
 
-
-    const user = await this.userService
-      .getUser(userId)
-      .catch(() => {
-        throw new UserNotFoundException();
-      });
-
-
+    const user = await this.userService.getUser(userId).catch(() => {
+      throw new UserNotFoundException();
+    });
 
     try {
       await this.jwtService.verify(data.token, {
@@ -201,16 +201,18 @@ export class AuthService {
   async verifyUserEmail(token: string) {
     const { userId } = await this.jwtService.verifyAsync<ITokenPayload>(token, {
       algorithms: ['RS256'],
-      publicKey: this.configService.getOrThrow('security.encToken.publicKey'),
+      publicKey: this.apiConfigService.getOrThrow(
+        'security.encToken.publicKey'
+      ),
     });
 
     const user = await this.userService.getUser(userId);
 
-    if (user.settings?.isEmailVerified) {
+    if (user.isEmailVerified) {
       throw new AlreadyVerifiedError();
     }
 
-    await this.userService.updateSettings(userId, { isEmailVerified: true });
+    await this.userService.updateUser(userId, { isEmailVerified: true });
   }
 
   /**
@@ -232,7 +234,11 @@ export class AuthService {
       throw new BadRequestException();
     }
 
-    return user!;
+    if (!user?.isEmailVerified) {
+      throw new ForbiddenException();
+    }
+
+    return user;
   }
 
   /**
@@ -243,15 +249,13 @@ export class AuthService {
     socialProfileDto: SocialProfileDto
   ): Promise<UserEntity> {
     let user = await this.userService
-      .findByUsernameOrEmail({ email: socialProfileDto.email })
-      .catch();
+      .findByEmail(socialProfileDto.email)
+      .catch(() => null);
 
     if (!user) {
-      const dto = {
+      user = await this.userService.createUser({
         ...socialProfileDto,
-        password: Math.random().toString(36).slice(2, 10),
-      };
-      user = await this.userService.createUser(dto, undefined, {
+        password: GeneratorProvider.generatePassword(),
         isEmailVerified: true,
       });
     }

@@ -1,26 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import type { UpdateUserSettingsBo } from '@modules/user/bo/update-user-settings.bo';
 import { Injectable } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToClass } from 'class-transformer';
 import type { FindOptionsWhere } from 'typeorm';
 import { Repository } from 'typeorm';
-import { Transactional } from 'typeorm-transactional-cls-hooked';
 
 import type { PageDto } from '@common/abstract/dto/page.dto';
 import { AwsS3Service } from '@common/shared/services/aws-s3.service';
 import { ValidatorService } from '@common/shared/services/validator.service';
 import { FileNotImageException, UserNotFoundException } from '@exceptions';
-import { IFile } from '@interfaces';
-import { CreateUserDto } from '@modules/user/dto/create-user.dto';
+import type { IFile } from '@interfaces';
+import type { CreateUserDto } from '@modules/user/dto/create-user.dto';
 import type { UpdateUserDto } from '@modules/user/dto/update-user.dto';
 
-import type { CreateUserSettingsBo } from './bo/create-user-settings.bo';
 import type { UserDto } from './dto/user.dto';
 import type { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import { UserEntity } from './entities/user.entity';
-import { UserRegisterDto } from '../auth/dto/user-register.dto';
 
 @Injectable()
 export class UserService {
@@ -28,8 +22,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly validatorService: ValidatorService,
-    private readonly awsS3Service: AwsS3Service,
-    private readonly commandBus: CommandBus
+    private readonly awsS3Service: AwsS3Service
   ) {}
 
   /**
@@ -73,11 +66,11 @@ export class UserService {
   }
 
   /**
-   * @findByUsernameOrEmail
+   * @findByEmail
    * @description finds a user by email or password
    * @param email
    */
-  async findByUsernameOrEmail(email: string): Promise<UserEntity> {
+  async findByEmail(email: string): Promise<UserEntity> {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
     if (email) {
@@ -95,9 +88,8 @@ export class UserService {
    * @param createUserDto
    * @param file
    */
-  @Transactional()
   async createUser(
-    createUserDto: CreateUserDto,
+    createUserDto: Partial<UserEntity>,
     file?: IFile
   ): Promise<UserEntity> {
     const user = this.userRepository.create(createUserDto);
@@ -123,26 +115,29 @@ export class UserService {
    * @description creates or updates a user and his settings
    * @param userRegisterDto
    * @param file
-   * @param userSettingsDto
    */
-  @Transactional()
   async upsertUser(
     userRegisterDto: CreateUserDto,
-    file?: IFile,
-    userSettingsDto?: Partial<CreateUserSettingsBo>
+    file?: IFile
   ): Promise<UserEntity> {
-    const insertion = await this.userRepository
+    void (await this.userRepository
       .createQueryBuilder()
       .insert()
       .into(UserEntity)
       .values(userRegisterDto)
       .orUpdate(['first_name', 'last_name', 'avatar'], ['email'])
-      .execute();
+      .execute());
 
-    return await this.findByUsernameOrEmail(userRegisterDto.email);
+    return this.findByEmail(userRegisterDto.email);
   }
 
-  async updateUser(userId: string, updateUserBo: UpdateUserDto): Promise<void> {
+  /**
+   * @updateUser
+   * @description updates the user entity
+   * @param userId
+   * @param updateUserDto
+   */
+  async updateUser(userId: Uuid, updateUserDto: UpdateUserDto): Promise<void> {
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .where('user.id = :id', { id: userId });
@@ -153,8 +148,8 @@ export class UserService {
       throw new UserNotFoundException();
     }
 
-    this.userRepository.merge(userEntity, updateUserBo);
+    const user = this.userRepository.merge(userEntity, updateUserDto);
 
-    await this.userRepository.save(updateUserBo);
+    await this.userRepository.save(user);
   }
 }

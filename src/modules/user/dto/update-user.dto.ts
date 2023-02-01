@@ -8,4 +8,8 @@ export class UpdateUserDto {
   public readonly phone?: string;
 
   public readonly avatar?: string;
+
+  public readonly isPhoneVerified?: boolean;
+
+  public readonly isEmailVerified?: boolean;
 }

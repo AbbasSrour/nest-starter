@@ -1,33 +1,27 @@
-import type { IAuthGuard, Type } from "@nestjs/passport";
-import { AuthGuard as NestAuthGuard } from "@nestjs/passport";
+import type { IAuthGuard, Type } from '@nestjs/passport';
+import { AuthGuard as NestAuthGuard } from '@nestjs/passport';
 
-type PublicOptions = {
-  public: boolean;
-}
-
-type JwtOptions = {
-  refresh: boolean;
-}
-
-type AuthGuardsOptions = JwtOptions | PublicOptions;
-
-type Options = {
+interface Options {
   isPublic?: boolean;
   refresh?: boolean;
 }
 
-export function AuthGuard(isPublic=false, refresh=false): () => Type<IAuthGuard> {
+export function AuthGuard(
+  isPublic = false,
+  refresh = false
+): () => Type<IAuthGuard> {
   const strategies = new Array<string>();
 
   if (isPublic) {
-    strategies.push("public");
+    strategies.push('public');
   }
 
   if (refresh) {
-    strategies.push("jwt-refresh");
+    strategies.push('jwt-refresh');
   } else {
-    strategies.push("jwt-access");
+    strategies.push('jwt-access');
   }
 
-  return ()=>NestAuthGuard(strategies);
+  // @ts-ignore
+  return NestAuthGuard(strategies);
 }

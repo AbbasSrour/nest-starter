@@ -8,6 +8,7 @@ import { ValidatorService } from './services/validator.service';
 @Global()
 @Module({
   imports: [HttpModule],
-  exports: [ValidatorService, AwsS3Service, GeneratorService, HttpModule],
+  providers: [ValidatorService, AwsS3Service, GeneratorService],
+  exports: [ValidatorService, AwsS3Service, GeneratorService],
 })
 export class SharedModule {}

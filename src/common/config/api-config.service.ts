@@ -7,10 +7,6 @@ import { SnakeNamingStrategy } from '@strategies/snake-naming.strategy';
 
 @Injectable()
 export class ApiConfigService extends ConfigService {
-  constructor() {
-    super();
-  }
-
   get isDevelopment(): boolean {
     return this.nodeEnv === 'development';
   }
@@ -76,7 +72,7 @@ export class ApiConfigService extends ConfigService {
       password: this.getString('DB_PASSWORD'),
       database: this.getString('DB_NAME'),
       subscribers: [UserSubscriber],
-      migrationsRun: true,
+      migrationsRun: false,
       logging: this.getBoolean('ENABLE_ORM_LOGS'),
       namingStrategy: new SnakeNamingStrategy(),
     };

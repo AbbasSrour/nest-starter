@@ -9,12 +9,10 @@ import {
   Logger,
   Param,
   Post,
-  UnprocessableEntityException,
   UploadedFile,
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
@@ -54,9 +52,8 @@ export class AuthController {
   private readonly logger = new Logger('AuthController');
 
   constructor(
-    private userService: UserService,
-    private authService: AuthService,
-    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
     private readonly mailerService: MailerService
   ) {}
 
@@ -156,9 +153,7 @@ export class AuthController {
   @Auth([], { public: true })
   @ApiOkResponse({})
   async sendVerificationEmail(@Body() dto: SendVerificationEmailDto) {
-    const user = await this.userService.findByUsernameOrEmail({
-      email: dto.email,
-    });
+    const user = await this.userService.findByEmail(dto.email);
 
     try {
       const { token } = await this.authService.encryptedToken(
@@ -262,6 +257,7 @@ export class AuthController {
 
   @Version('1')
   @Get('phone/verify')
+  async verifyPhone() {}
 
   /**
    * @googleAuth

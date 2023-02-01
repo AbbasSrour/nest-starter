@@ -38,5 +38,5 @@ export class UserRegisterDto {
   @ApiProperty()
   @Column()
   @IsPhoneNumber()
-  phone: string;
+  readonly phone: string;
 }

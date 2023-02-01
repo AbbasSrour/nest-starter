@@ -1,18 +1,18 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CreateSettingsHandler } from "./commands/create-settings.command";
-import { UserController } from "./user.controller";
-import { UserEntity } from "./entities/user.entity";
-import { UserService } from "./user.service";
-import { UserSettingsEntity } from "./entities/user-settings.entity";
+import { UserNotificationTokenEntity } from '@modules/user/entities/user-notification-token.entity';
 
-export const handlers = [CreateSettingsHandler];
+import { UserEntity } from './entities/user.entity';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, UserSettingsEntity])],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity, UserNotificationTokenEntity]),
+  ],
   controllers: [UserController],
   exports: [UserService],
-  providers: [UserService, ...handlers],
+  providers: [UserService],
 })
 export class UserModule {}

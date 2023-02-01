@@ -16,10 +16,13 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { WinstonModule } from 'nest-winston';
+import {
+  initializeTransactionalContext,
+  patchTypeORMRepositoryWithBaseRepository,
+} from 'typeorm-transactional-cls-hooked';
 
 import { ApiConfigModule } from '@common/config/api-config.module';
 import { ApiConfigService } from '@common/config/api-config.service';
-import { SharedModule } from '@common/shared/shared.module';
 import { TranslationModule } from '@common/translation/translation.module';
 import { TranslationService } from '@common/translation/translation.service';
 import { HttpExceptionFilter } from '@filters/bad-request.filter';
@@ -30,15 +33,10 @@ import { setupSwagger } from '@src/setup-swagger';
 
 import { AppModule } from './app.module';
 
-// import {
-//     initializeTransactionalContext,
-//     patchTypeORMRepositoryWithBaseRepository,
-// } from 'typeorm-transactional-cls-hooked';
-
 export async function bootstrap(): Promise<NestExpressApplication> {
   // Typeorm Transactions
-  // initializeTransactionalContext();
-  // patchTypeORMRepositoryWithBaseRepository();
+  initializeTransactionalContext();
+  patchTypeORMRepositoryWithBaseRepository();
 
   // Creates an express http rest api
   const app = await NestFactory.create<NestExpressApplication>(

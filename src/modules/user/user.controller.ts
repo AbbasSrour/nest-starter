@@ -26,7 +26,7 @@ import { UserService } from './user.service';
 @ApiTags('users')
 export class UserController {
   constructor(
-    private userService: UserService,
+    private readonly userService: UserService,
     private readonly translationService: TranslationService
   ) {}
 

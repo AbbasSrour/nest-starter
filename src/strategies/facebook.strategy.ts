@@ -27,8 +27,6 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   ): Promise<VerifyCallback> {
     const { name, emails, photos } = profile;
 
-    console.log(profile);
-
     if (!emails || !name) {
       return null;
     }

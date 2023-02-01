@@ -9,9 +9,9 @@ import { FacebookStrategy } from '@strategies/facebook.strategy';
 import { PublicStrategy } from '@strategies/public.strategy';
 import { JwtRefreshStrategy } from '@strategies/refresh-token.strategy';
 
-import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
@@ -28,6 +28,7 @@ import { AuthService } from './auth.service';
       }),
     }),
     MailerModule,
+    UserModule,
   ],
   controllers: [AuthController],
   providers: [
